@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.swing.undo.UndoManager;
 
 import javafx.scene.Node;
+import javafx.scene.layout.HBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
@@ -30,6 +31,7 @@ import org.jabref.preferences.PreferencesService;
 
 import com.tobiasdiez.easybind.EasyBind;
 import org.controlsfx.control.Rating;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 /**
  * A column that displays a SpecialField
@@ -100,9 +102,26 @@ public class SpecialFieldColumn extends MainTableColumn<Optional<SpecialFieldVal
         }
 
         ranking.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+
             if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
                 ranking.setRating(0);
                 event.consume();
+            } else if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 1) {
+                if(entry.getEntry().getField(SpecialField.RANKING).isPresent()) {
+                    // Get the position of the clicked star (1-5)
+                    var clickedStar = ((FontIcon) event.getTarget());
+                    var parent = (HBox) clickedStar.getParent();
+                    var positionOfStarInParent = parent.getChildren().indexOf(clickedStar) + 1;
+
+                    // Compare clicked with previous rating
+                    var clickedRating = SpecialFieldValue.getRating(positionOfStarInParent);
+                    var previousRating = SpecialFieldValue.getRating(
+                            Integer.parseInt(entry.getEntry().getField(SpecialField.RANKING).get().split("rank")[1]));
+                    if (clickedRating.equals(previousRating)) {
+                        ranking.setRating(0);
+                        event.consume();
+                    }
+                }
             } else if (event.getButton().equals(MouseButton.SECONDARY)) {
                 event.consume();
             }
